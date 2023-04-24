@@ -1,0 +1,59 @@
+FROM ubuntu:20.04
+
+ARG YOCTO_VERSION=4.1.3
+ARG DEBIAN_FRONTEND=noninteractive
+
+ENV TZ=Etc/UTC
+
+# [Required packages for build host](https://docs.yoctoproject.org/ref-manual/system-requirements.html#ubuntu-and-debian)
+RUN apt-get update && apt-get install -y \
+  build-essential \
+  chrpath \
+  cpio \
+  debianutils \
+  diffstat \
+  gawk \
+  gcc \
+  git \
+  iputils-ping \
+  libegl1-mesa \
+  liblz4-tool \
+  libsdl1.2-dev \
+  mesa-common-dev \
+  pylint3 \
+  python3 \
+  python3-git \
+  python3-jinja2 \
+  python3-pexpect \
+  python3-pip \
+  python3-subunit \
+  socat \
+  texinfo \
+  unzip \
+  wget \
+  xterm \
+  xz-utils \
+  zstd \
+  && rm -rf /var/lib/apt/lists/*
+
+# [Build tools](https://docs.yoctoproject.org/ref-manual/system-requirements.html#downloading-a-pre-built-buildtools-tarball)
+# NOTE Cannot use {.sh,.sh.sha256sum} syntax with wget as dockerfile does some weird encoding
+RUN wget https://downloads.yoctoproject.org/releases/yocto/yocto-${YOCTO_VERSION}/buildtools/x86_64-buildtools-nativesdk-standalone-${YOCTO_VERSION}.sh \
+  && wget https://downloads.yoctoproject.org/releases/yocto/yocto-${YOCTO_VERSION}/buildtools/x86_64-buildtools-nativesdk-standalone-${YOCTO_VERSION}.sh.sha256sum \
+  && sha256sum -c *.sha256sum \
+  && bash x86_64-buildtools-nativesdk-standalone-${YOCTO_VERSION}.sh -y \
+  && rm x86_64-buildtools-nativesdk-standalone-${YOCTO_VERSION}.*
+
+# Locale setup
+RUN apt-get update && apt-get install -y \
+  locales \
+  && rm -rf /var/lib/apt/lists/*
+RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && \
+    locale-gen
+ENV LANG en_US.UTF-8  
+ENV LANGUAGE en_US:en  
+ENV LC_ALL en_US.UTF-8   
+
+# Can't run bitbake as root
+RUN useradd chef
+USER chef
