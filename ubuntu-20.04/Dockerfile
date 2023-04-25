@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM ubuntu:20.04 as base
 
 ARG YOCTO_VERSION=4.1.3
 ARG DEBIAN_FRONTEND=noninteractive
@@ -49,7 +49,7 @@ RUN apt-get update && apt-get install -y \
   locales \
   && rm -rf /var/lib/apt/lists/*
 RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && \
-    locale-gen
+  locale-gen
 ENV LANG en_US.UTF-8  
 ENV LANGUAGE en_US:en  
 ENV LC_ALL en_US.UTF-8   
@@ -57,3 +57,16 @@ ENV LC_ALL en_US.UTF-8
 # Can't run bitbake as root
 RUN useradd chef
 USER chef
+
+
+FROM base as test
+
+WORKDIR /workdir
+
+# [Quick build](https://docs.yoctoproject.org/brief-yoctoprojectqs/index.html#use-git-to-clone-poky)
+RUN git clone git://git.yoctoproject.org/poky \
+  && cd poky \
+  && git checkout langdale-4.1.3 \
+  && . /opt/poky/4.1.3/environment-setup-x86_64-pokysdk-linux \
+  && . ./oe-init-build-env && bitbake quilt-native \
+  && bitbake quilt-native

@@ -2,13 +2,19 @@
 
 A container which supports building Yocto images.
 
+# Running tests
+
+```
+user@host$ docker build --target test <base-distro>
+```
+
 # Usage
 
 
 This is still very early in development, but one can build an image like so...
 
 ```
-user@host$ docker build ubuntu-20.04 -t yocto_ubuntu:4.1.3_20.04
+user@host$ docker build --target base -t yocto_ubuntu:4.1.3_20.04 ubuntu-20.04
 user@host$ docker run --rm -it -v myvolume:/workdir ubuntu:20.04
 root@ubuntu$ mkdir /workdir/poky
 root@ubuntu$ chown 1000:1000 /workdir/poky
