@@ -1,44 +1,59 @@
-FROM ubuntu:20.04 as base
-
-ARG DEBIAN_FRONTEND=noninteractive
+FROM fedora:36 as base
 
 # [Required packages for build host](https://docs.yoctoproject.org/ref-manual/system-requirements.html#ubuntu-and-debian)
-RUN apt update && apt install -y \
-  build-essential \
+RUN dnf -y update && dnf -y install \
+  SDL-devel \
+  bzip2 \
+  ccache \
   chrpath \
   cpio \
-  debianutils \
+  cpp \
   diffstat \
+  diffutils \
+  file \
+  findutils \
   gawk \
   gcc \
+  gcc-c++ \
   git \
-  iputils-ping \
-  libegl1-mesa \
-  liblz4-tool \
-  libsdl1.2-dev \
-  mesa-common-dev \
-  pylint3 \
+  glibc-devel \
+  gzip \
+  hostname \
+  lz4 \
+  make \
+  mesa-libGL-devel \
+  patch \
+  perl \
+  perl-Data-Dumper \
+  perl-File-Compare \
+  perl-File-Copy \
+  perl-FindBin \
+  perl-Text-ParseWords \
+  perl-Thread-Queue \
+  perl-bignum \
+  perl-locale \
+  python \
   python3 \
-  python3-git \
+  python3-GitPython \
   python3-jinja2 \
   python3-pexpect \
   python3-pip \
-  python3-subunit \
+  rpcgen \
   socat \
+  tar \
   texinfo \
   unzip \
   wget \
+  which \
   xterm \
-  xz-utils \
+  xz \
   zstd \
-  && apt clean && rm -rf /var/lib/apt/lists/*
+  && dnf clean all
 
 # Locale setup
-RUN apt update && apt install -y \
-  locales \
-  && apt clean && rm -rf /var/lib/apt/lists/*
-RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen \
-  && locale-gen
+RUN dnf -y update && dnf -y install \
+  glibc-langpack-en \
+  && dnf clean all
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
@@ -61,10 +76,6 @@ RUN \
 
 
 FROM base as development
-
-RUN apt update && apt install -y \
-  curl \
-  && apt clean && rm -rf /var/lib/apt/lists/*
 
 # Setup [fixuid](https://github.com/boxboat/fixuid)
 RUN USER=chef && \

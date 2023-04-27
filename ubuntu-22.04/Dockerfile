@@ -1,4 +1,4 @@
-FROM ubuntu:20.04 as base
+FROM ubuntu:22.04 as base
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -9,6 +9,7 @@ RUN apt update && apt install -y \
   cpio \
   debianutils \
   diffstat \
+  file \
   gawk \
   gcc \
   git \
@@ -17,7 +18,7 @@ RUN apt update && apt install -y \
   liblz4-tool \
   libsdl1.2-dev \
   mesa-common-dev \
-  pylint3 \
+  pylint \
   python3 \
   python3-git \
   python3-jinja2 \

@@ -1,4 +1,4 @@
-FROM ubuntu:20.04 as base
+FROM debian:bullseye as base
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -9,6 +9,7 @@ RUN apt update && apt install -y \
   cpio \
   debianutils \
   diffstat \
+  file \
   gawk \
   gcc \
   git \
