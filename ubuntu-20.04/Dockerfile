@@ -55,12 +55,12 @@ ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8   
 
 # Can't run bitbake as root
-RUN useradd chef
+RUN useradd --create-home chef
 
 
 FROM base as test
 USER chef
-WORKDIR /workdir
+WORKDIR /home/chef
 
 # [Quick build](https://docs.yoctoproject.org/brief-yoctoprojectqs/index.html#use-git-to-clone-poky)
 RUN git clone git://git.yoctoproject.org/poky \
@@ -87,4 +87,5 @@ RUN USER=chef && \
     printf "user: $USER\ngroup: $GROUP\n" > /etc/fixuid/config.yml
 
 USER chef:chef
+WORKDIR /home/chef
 ENTRYPOINT ["fixuid"]
