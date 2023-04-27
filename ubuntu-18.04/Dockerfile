@@ -1,6 +1,5 @@
-FROM ubuntu:20.04 as base
+FROM ubuntu:18.04 as base
 
-ARG YOCTO_VERSION=4.1.3
 ARG DEBIAN_FRONTEND=noninteractive
 
 ENV TZ=Etc/UTC
@@ -13,27 +12,24 @@ RUN apt-get update && apt-get install -y \
   debianutils \
   diffstat \
   gawk \
-  gcc \
-  git \
+  gcc-multilib \
+  git-core \
   iputils-ping \
   libegl1-mesa \
-  liblz4-tool \
   libsdl1.2-dev \
-  mesa-common-dev \
   pylint3 \
+  python \
   python3 \
   python3-git \
   python3-jinja2 \
   python3-pexpect \
   python3-pip \
-  python3-subunit \
   socat \
   texinfo \
   unzip \
   wget \
   xterm \
   xz-utils \
-  zstd \
   && rm -rf /var/lib/apt/lists/*
 
 # Locale setup
@@ -58,7 +54,7 @@ WORKDIR /home/chef
 RUN \
   git clone git://git.yoctoproject.org/poky \
   && cd poky \
-  && git checkout langdale-4.1.3 \
+  && git checkout zeus \
   && . ./oe-init-build-env \
   && bitbake quilt-native
 
