@@ -36,14 +36,6 @@ RUN apt-get update && apt-get install -y \
   zstd \
   && rm -rf /var/lib/apt/lists/*
 
-# [Build tools](https://docs.yoctoproject.org/ref-manual/system-requirements.html#downloading-a-pre-built-buildtools-tarball)
-# NOTE Cannot use {.sh,.sh.sha256sum} syntax with wget as dockerfile does some weird encoding
-RUN wget https://downloads.yoctoproject.org/releases/yocto/yocto-${YOCTO_VERSION}/buildtools/x86_64-buildtools-nativesdk-standalone-${YOCTO_VERSION}.sh \
-  && wget https://downloads.yoctoproject.org/releases/yocto/yocto-${YOCTO_VERSION}/buildtools/x86_64-buildtools-nativesdk-standalone-${YOCTO_VERSION}.sh.sha256sum \
-  && sha256sum -c *.sha256sum \
-  && bash x86_64-buildtools-nativesdk-standalone-${YOCTO_VERSION}.sh -y \
-  && rm x86_64-buildtools-nativesdk-standalone-${YOCTO_VERSION}.*
-
 # Locale setup
 RUN apt-get update && apt-get install -y \
   locales \
@@ -63,11 +55,11 @@ USER chef
 WORKDIR /home/chef
 
 # [Quick build](https://docs.yoctoproject.org/brief-yoctoprojectqs/index.html#use-git-to-clone-poky)
-RUN git clone git://git.yoctoproject.org/poky \
+RUN \
+  && git clone git://git.yoctoproject.org/poky \
   && cd poky \
   && git checkout langdale-4.1.3 \
-  && . /opt/poky/4.1.3/environment-setup-x86_64-pokysdk-linux \
-  && . ./oe-init-build-env && bitbake quilt-native \
+  && . ./oe-init-build-env \
   && bitbake quilt-native
 
 
