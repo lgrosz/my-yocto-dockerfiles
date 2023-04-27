@@ -56,11 +56,10 @@ ENV LC_ALL en_US.UTF-8
 
 # Can't run bitbake as root
 RUN useradd chef
-USER chef
 
 
 FROM base as test
-
+USER chef
 WORKDIR /workdir
 
 # [Quick build](https://docs.yoctoproject.org/brief-yoctoprojectqs/index.html#use-git-to-clone-poky)
@@ -70,3 +69,22 @@ RUN git clone git://git.yoctoproject.org/poky \
   && . /opt/poky/4.1.3/environment-setup-x86_64-pokysdk-linux \
   && . ./oe-init-build-env && bitbake quilt-native \
   && bitbake quilt-native
+
+
+FROM base as development
+
+RUN apt-get update && apt-get install -y \
+  curl \
+  && rm -rf /var/lib/apt/lists/*
+
+# Setup [fixuid](https://github.com/boxboat/fixuid)
+RUN USER=chef && \
+    GROUP=chef && \
+    curl -SsL https://github.com/boxboat/fixuid/releases/download/v0.5.1/fixuid-0.5.1-linux-amd64.tar.gz | tar -C /usr/local/bin -xzf - && \
+    chown root:root /usr/local/bin/fixuid && \
+    chmod 4755 /usr/local/bin/fixuid && \
+    mkdir -p /etc/fixuid && \
+    printf "user: $USER\ngroup: $GROUP\n" > /etc/fixuid/config.yml
+
+USER chef:chef
+ENTRYPOINT ["fixuid"]
