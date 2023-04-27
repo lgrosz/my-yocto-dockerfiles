@@ -1,6 +1,14 @@
 # General
 
-A container which supports building Yocto images.
+Dockerfiles which provide containerized build hosts for the [Yocto Project](https://www.yoctoproject.org/).
+
+# How is this different than crops?
+
+[crops](https://github.com/crops) are the official Yocto Project containerized
+build hosts. However, they only support the most recent Yocto Project releases.
+Professionally, I work on older releases and the crops images do not (promise
+to) work with older releases. This project aims to support older releases as
+well as newer releases.
 
 # Running tests
 
@@ -11,19 +19,16 @@ user@host$ docker build --target test <base-distro>
 # Usage
 
 
-This is still very early in development, but one can build an image like so...
+One can build poky like so...
 
 ```
-user@host$ docker build --target base -t yocto_ubuntu:4.1.3_20.04 ubuntu-20.04
-user@host$ docker run --rm -it -v myvolume:/workdir ubuntu:20.04
-root@ubuntu$ mkdir /workdir/poky
-root@ubuntu$ chown 1000:1000 /workdir/poky
-user@host$ docker run --rm -it -v myvolume:/workdir yocto_ubuntu:4.1.3_20.04
-chef@yocto_ubuntu$ source /opt/poky/4.1.3/environment-setup-x86_64-pokysdk-linux
-chef@yocto_ubuntu$ cd /workdir/poky
-chef@yocto_ubuntu$ git clone git://git.yoctoproject.org/poky .
-chef@yocto_ubuntu$ git checkout -t origin/langdale -b my-langdale
-chef@yocto_ubuntu$ source oe-init-build-env
-chef@yocto_ubuntu$ bitbake core-image-minimal
+user@host$ docker build --target development -t yocto_ubuntu_dev:4.1.3_20.04 ubuntu-20.04
+user@host$ docker run --rm -it -v myvolume:/home/chef yocto_ubuntu_dev:4.1.3_20.04 bash
+chef@yocto_ubuntu_dev$ git clone git://git.yoctoproject.org/poky poky
+chef@yocto_ubuntu_dev$ cd poky
+chef@yocto_ubuntu_dev$ source oe-init-build-env
+chef@yocto_ubuntu_dev$ bitbake core-image-minimal
 ```
+
+`myvolume` will contain the build artifacts.
 

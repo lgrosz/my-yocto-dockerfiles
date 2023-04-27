@@ -1,50 +1,41 @@
-FROM ubuntu:20.04 as base
-
-ARG DEBIAN_FRONTEND=noninteractive
+FROM opensuse/leap:15.4 as base
 
 # [Required packages for build host](https://docs.yoctoproject.org/ref-manual/system-requirements.html#ubuntu-and-debian)
-RUN apt update && apt install -y \
-  build-essential \
+RUN zypper --non-interactive update && zypper --non-interactive install \
+  Mesa-dri-devel \
+  Mesa-libEGL1 \
   chrpath \
-  cpio \
-  debianutils \
   diffstat \
-  gawk \
   gcc \
+  gcc-c++ \
   git \
-  iputils-ping \
-  libegl1-mesa \
-  liblz4-tool \
-  libsdl1.2-dev \
-  mesa-common-dev \
-  pylint3 \
+  libSDL-devel \
+  lz4 \
+  make \
+  makeinfo \
+  patch \
+  python \
+  python-curses \
+  python-xml \
   python3 \
-  python3-git \
-  python3-jinja2 \
+  python3-Jinja2 \
+  python3-curses \
   python3-pexpect \
   python3-pip \
-  python3-subunit \
+  rpcgen \
   socat \
-  texinfo \
-  unzip \
+  tar \
   wget \
+  which \
   xterm \
-  xz-utils \
+  xz \
   zstd \
-  && apt clean && rm -rf /var/lib/apt/lists/*
+  && zypper clean
 
-# Locale setup
-RUN apt update && apt install -y \
-  locales \
-  && apt clean && rm -rf /var/lib/apt/lists/*
-RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen \
-  && locale-gen
-ENV LANG en_US.UTF-8
-ENV LANGUAGE en_US:en
-ENV LC_ALL en_US.UTF-8
+RUN pip3 install GitPython
 
 # Can't run bitbake as root
-RUN useradd --create-home chef
+RUN useradd --user-group --create-home chef
 
 
 FROM base as test
@@ -62,9 +53,9 @@ RUN \
 
 FROM base as development
 
-RUN apt update && apt install -y \
-  curl \
-  && apt clean && rm -rf /var/lib/apt/lists/*
+RUN zypper --non-interactive update && zypper --non-interactive install \
+  gzip \
+  && zypper clean
 
 # Setup [fixuid](https://github.com/boxboat/fixuid)
 RUN USER=chef && \

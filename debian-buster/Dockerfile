@@ -1,4 +1,4 @@
-FROM ubuntu:20.04 as base
+FROM debian:buster as base
 
 ARG DEBIAN_FRONTEND=noninteractive
 
