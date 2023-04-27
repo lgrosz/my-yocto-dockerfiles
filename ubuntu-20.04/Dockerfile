@@ -56,7 +56,7 @@ WORKDIR /home/chef
 
 # [Quick build](https://docs.yoctoproject.org/brief-yoctoprojectqs/index.html#use-git-to-clone-poky)
 RUN \
-  && git clone git://git.yoctoproject.org/poky \
+  git clone git://git.yoctoproject.org/poky \
   && cd poky \
   && git checkout langdale-4.1.3 \
   && . ./oe-init-build-env \
