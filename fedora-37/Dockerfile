@@ -1,4 +1,4 @@
-FROM fedora:34 as base
+FROM fedora:37 as base
 
 # [Required packages for build host](https://docs.yoctoproject.org/ref-manual/system-requirements.html#ubuntu-and-debian)
 RUN dnf -y update && dnf -y install \
