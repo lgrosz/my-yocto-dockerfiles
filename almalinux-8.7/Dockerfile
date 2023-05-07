@@ -52,6 +52,10 @@ ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
 
+# Pull in build-tools
+COPY --from=yocto_buildtools /x86_64-buildtools-extended-nativesdk-standalone-4.2.sh /
+RUN /x86_64-buildtools-extended-nativesdk-standalone-4.2.sh -y
+
 # Can't run bitbake as root
 RUN useradd --create-home chef
 
@@ -62,7 +66,8 @@ WORKDIR /home/chef
 
 # [Quick build](https://docs.yoctoproject.org/brief-yoctoprojectqs/index.html#use-git-to-clone-poky)
 RUN \
-  git clone git://git.yoctoproject.org/poky \
+  . /opt/poky/4.2/environment-setup-x86_64-pokysdk-linux \
+  && git clone git://git.yoctoproject.org/poky \
   && cd poky \
   && git checkout master \
   && . ./oe-init-build-env \

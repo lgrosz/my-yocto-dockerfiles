@@ -4,11 +4,14 @@ FROM opensuse/leap:15.3 as base
 RUN zypper --non-interactive update && zypper --non-interactive install \
   Mesa-dri-devel \
   Mesa-libEGL1 \
+  bzip2 \
   chrpath \
   diffstat \
   gcc \
   gcc-c++ \
   git \
+  gzip \
+  hostname \
   libSDL-devel \
   lz4 \
   make \
@@ -34,6 +37,10 @@ RUN zypper --non-interactive update && zypper --non-interactive install \
 
 RUN pip3 install GitPython
 
+# Pull in build-tools
+COPY --from=yocto_buildtools /x86_64-buildtools-extended-nativesdk-standalone-4.2.sh /
+RUN /x86_64-buildtools-extended-nativesdk-standalone-4.2.sh -y
+
 # Can't run bitbake as root
 RUN useradd --user-group --create-home chef
 
@@ -44,7 +51,8 @@ WORKDIR /home/chef
 
 # [Quick build](https://docs.yoctoproject.org/brief-yoctoprojectqs/index.html#use-git-to-clone-poky)
 RUN \
-  git clone git://git.yoctoproject.org/poky \
+  . /opt/poky/4.2/environment-setup-x86_64-pokysdk-linux \
+  && git clone git://git.yoctoproject.org/poky \
   && cd poky \
   && git checkout master \
   && . ./oe-init-build-env \
@@ -55,7 +63,6 @@ FROM base as development
 
 RUN zypper --non-interactive update && zypper --non-interactive install \
   curl \
-  gzip \
   && zypper clean
 
 # Setup [fixuid](https://github.com/boxboat/fixuid)
