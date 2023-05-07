@@ -1,20 +1,62 @@
 name: Build images
+
 on:
   push:
     branches:
       - master
   pull_request:
-
   workflow_dispatch:
 
 jobs:
-  build-image:
+  buildtools:
+    runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
+        volumes:
+          - /tmp/registry:/var/lib/registry
+    steps:
+      - name: Checkout the repo
+        uses: actions/checkout@v3
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+        with:
+          # network=host driver-opt needed to push to local registry
+          driver-opts: network=host
+
+      - name: Build buildtools image
+        uses: docker/build-push-action@v4
+        with:
+          target: buildtools
+          context: buildtools
+          tags: localhost:5000/yocto_buildtools:latest
+          push: true
+
+      - name: Upload registry as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: docker-registry
+          path: /tmp/registry
+
+  images:
+    needs: buildtools
     runs-on: ubuntu-latest
     permissions:
       packages: write
     strategy:
       fail-fast: false
       matrix:
+        # TODO Buildtools extended steps should only need to be done for
+        # - almalinux-8.7
+        # - ubuntu-18.04,
+        # - leap-15.3 
+        # - leap-15.4
         base_distro: [
           almalinux-8.7,
           almalinux-9.1,
@@ -29,14 +71,39 @@ jobs:
         ]
 
     steps:
+      - name: Download registry from artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: docker-registry
+          path: /tmp/registry
+
+      # This must be done without the service container feature since the
+      # volume needs to be populated before starting the container
+      - name: Start conatiner registry
+        run: |
+          docker run --rm --detach --publish 5000:5000 \
+          --volume /tmp/registry:/var/lib/registry \
+          registry:2
+
       - name: Checkout the repo
         uses: actions/checkout@v3
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+        with:
+          # network=host driver-opt needed to push to local registry
+          driver-opts: network=host
 
       - name: Test
         uses: docker/build-push-action@v4
         with:
           target: test
           context: ${{ matrix.base_distro }}
+          build-contexts: |
+            yocto_buildtools=docker-image://localhost:5000/yocto_buildtools:latest
           push: false
           
       - name: Development
@@ -44,4 +111,6 @@ jobs:
         with:
           target: development
           context: ${{ matrix.base_distro }}
+          build-contexts: |
+            yocto_buildtools=docker-image://localhost:5000/yocto_buildtools:latest
           push: false
