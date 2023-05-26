@@ -1,6 +1,3 @@
-ARG TARGETARCH
-
-
 FROM ubuntu:18.04 as base
 
 ARG DEBIAN_FRONTEND=noninteractive

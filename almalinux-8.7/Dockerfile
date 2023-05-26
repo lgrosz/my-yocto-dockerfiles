@@ -1,6 +1,3 @@
-ARG TARGETARCH
-
-
 FROM almalinux:8.7 as base
 
 # [Required packages for build host](https://docs.yoctoproject.org/ref-manual/system-requirements.html#ubuntu-and-debian)
