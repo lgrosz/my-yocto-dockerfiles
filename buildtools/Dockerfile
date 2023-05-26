@@ -1,3 +1,6 @@
+ARG TARGETARCH
+
+
 FROM ubuntu:22.04 as base
 
 ARG DEBIAN_FRONTEND=noninteractive
@@ -61,9 +64,19 @@ RUN \
   && bitbake buildtools-tarball buildtools-extended-tarball buildtools-make-tarball
 
 
-from ubuntu:22.04 as buildtools
+FROM ubuntu:22.04 as buildtools-amd64
 
 COPY --from=builder /home/chef/poky/build/tmp/deploy/sdk/x86_64-buildtools-nativesdk-standalone-4.2.sh /
 COPY --from=builder /home/chef/poky/build/tmp/deploy/sdk/x86_64-buildtools-extended-nativesdk-standalone-4.2.sh /
 COPY --from=builder /home/chef/poky/build/tmp/deploy/sdk/x86_64-buildtools-make-nativesdk-standalone-4.2.sh /
+
+
+FROM ubuntu:22.04 as buildtools-arm64
+
+COPY --from=builder /home/chef/poky/build/tmp/deploy/sdk/aarch64-buildtools-nativesdk-standalone-4.2.sh /
+COPY --from=builder /home/chef/poky/build/tmp/deploy/sdk/aarch64-buildtools-extended-nativesdk-standalone-4.2.sh /
+COPY --from=builder /home/chef/poky/build/tmp/deploy/sdk/aarch64-buildtools-make-nativesdk-standalone-4.2.sh /
+
+
+FROM buildtools-$TARGETARCH as buildtools
 

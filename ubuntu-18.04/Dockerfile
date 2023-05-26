@@ -1,3 +1,6 @@
+ARG TARGETARCH
+
+
 FROM ubuntu:18.04 as base
 
 ARG DEBIAN_FRONTEND=noninteractive
@@ -43,15 +46,23 @@ ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
 
-# Pull in build-tools
+
+FROM base as base-amd64
+
 COPY --from=yocto_buildtools /x86_64-buildtools-extended-nativesdk-standalone-4.2.sh /
 RUN /x86_64-buildtools-extended-nativesdk-standalone-4.2.sh -y
+
+
+FROM base as base-arm64
+
+COPY --from=yocto_buildtools /aarch64-buildtools-extended-nativesdk-standalone-4.2.sh /
+RUN /aarch64-buildtools-extended-nativesdk-standalone-4.2.sh -y
 
 # Can't run bitbake as root
 RUN useradd --create-home chef
 
 
-FROM base as test
+FROM base-$TARGETARCH as test
 USER chef
 WORKDIR /home/chef
 
@@ -65,7 +76,7 @@ RUN \
   && bitbake quilt-native
 
 
-FROM base as development
+FROM base-$TARGETARCH as development
 
 RUN apt update && apt install -y \
   curl \
