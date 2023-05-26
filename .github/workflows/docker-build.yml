@@ -10,6 +10,13 @@ on:
 jobs:
   buildtools:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target_platform: [
+          linux/amd64,
+          linux/arm64/v8
+        ]
     services:
       registry:
         image: registry:2
@@ -35,14 +42,14 @@ jobs:
         with:
           target: buildtools
           context: buildtools
-          platforms: linux/amd64,linux/arm64/v8
+          platforms: ${{ matrix.target_platform }}
           tags: localhost:5000/yocto_buildtools:latest
           push: true
 
       - name: Upload registry as artifact
         uses: actions/upload-artifact@v3
         with:
-          name: docker-registry
+          name: docker-registry-${{ matrix.target_platform }}
           path: /tmp/registry
 
   images:
@@ -70,12 +77,16 @@ jobs:
           ubuntu-20.04,
           ubuntu-22.04
         ]
+        target_platform: [
+          linux/amd64,
+          linux/arm64/v8
+        ]
 
     steps:
       - name: Download registry from artifacts
         uses: actions/download-artifact@v3
         with:
-          name: docker-registry
+          name: docker-registry-${{ matrix.target_platform }}
           path: /tmp/registry
 
       # This must be done without the service container feature since the
@@ -103,7 +114,7 @@ jobs:
         with:
           target: test
           context: ${{ matrix.base_distro }}
-          platforms: linux/amd64,linux/arm64/v8
+          platforms: ${{ matrix.target_platform }}
           build-contexts: |
             yocto_buildtools=docker-image://localhost:5000/yocto_buildtools:latest
           push: false
@@ -113,7 +124,7 @@ jobs:
         with:
           target: development
           context: ${{ matrix.base_distro }}
-          platforms: linux/amd64,linux/arm64/v8
+          platforms: ${{ matrix.target_platform }}
           build-contexts: |
             yocto_buildtools=docker-image://localhost:5000/yocto_buildtools:latest
           push: false
