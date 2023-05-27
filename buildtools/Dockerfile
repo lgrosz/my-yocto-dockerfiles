@@ -59,7 +59,7 @@ RUN \
   && git checkout master \
   && . ./oe-init-build-env \
   && bitbake buildtools-tarball buildtools-extended-tarball buildtools-make-tarball \
-  && mv /home/chef/poky/build/tmp/sdk /home/chef \
+  && mv /home/chef/poky/build/tmp/deploy/sdk /home/chef \
   && rm -rf /home/chef/poky
 
 
