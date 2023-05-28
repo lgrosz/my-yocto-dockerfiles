@@ -9,7 +9,7 @@ on:
 
 jobs:
   buildtools:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     services:
       registry:
         image: registry:2
