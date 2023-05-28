@@ -9,7 +9,7 @@ on:
 
 jobs:
   buildtools:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     services:
       registry:
         image: registry:2
@@ -35,6 +35,7 @@ jobs:
         with:
           target: buildtools
           context: buildtools
+          platforms: linux/amd64,linux/arm64/v8
           tags: localhost:5000/yocto_buildtools:latest
           push: true
 
@@ -102,6 +103,7 @@ jobs:
         with:
           target: test
           context: ${{ matrix.base_distro }}
+          platforms: linux/amd64,linux/arm64/v8
           build-contexts: |
             yocto_buildtools=docker-image://localhost:5000/yocto_buildtools:latest
           push: false
@@ -111,6 +113,7 @@ jobs:
         with:
           target: development
           context: ${{ matrix.base_distro }}
+          platforms: linux/amd64,linux/arm64/v8
           build-contexts: |
             yocto_buildtools=docker-image://localhost:5000/yocto_buildtools:latest
           push: false

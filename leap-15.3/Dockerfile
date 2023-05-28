@@ -37,15 +37,23 @@ RUN zypper --non-interactive update && zypper --non-interactive install \
 
 RUN pip3 install GitPython
 
-# Pull in build-tools
+
+FROM base as base-amd64
+
 COPY --from=yocto_buildtools /x86_64-buildtools-extended-nativesdk-standalone-4.2.sh /
 RUN /x86_64-buildtools-extended-nativesdk-standalone-4.2.sh -y
+
+
+FROM base as base-arm64
+
+COPY --from=yocto_buildtools /aarch64-buildtools-extended-nativesdk-standalone-4.2.sh /
+RUN /aarch64-buildtools-extended-nativesdk-standalone-4.2.sh -y
 
 # Can't run bitbake as root
 RUN useradd --user-group --create-home chef
 
 
-FROM base as test
+FROM base-$TARGETARCH as test
 USER chef
 WORKDIR /home/chef
 
@@ -59,7 +67,7 @@ RUN \
   && bitbake quilt-native
 
 
-FROM base as development
+FROM base-$TARGETARCH as development
 
 RUN zypper --non-interactive update && zypper --non-interactive install \
   curl \
