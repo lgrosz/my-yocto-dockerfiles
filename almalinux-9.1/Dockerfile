@@ -69,6 +69,7 @@ RUN \
   && cd poky \
   && git checkout master \
   && . ./oe-init-build-env \
+  && echo INHERIT += \"rm_work\" >> conf/local.conf \
   && bitbake quilt-native
 
 
