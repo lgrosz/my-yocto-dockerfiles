@@ -1,8 +1,14 @@
-FROM ubuntu:18.04 as base
+FROM debian:stretch as base
 
 ARG DEBIAN_FRONTEND=noninteractive
 
 # [Required packages for build host](https://docs.yoctoproject.org/3.0/mega-manual/mega-manual.html#ubuntu-packages)
+RUN <<EOF
+echo "deb http://archive.debian.org/debian/ stretch main contrib non-free" > /etc/apt/sources.list
+echo "deb http://archive.debian.org/debian/ stretch-proposed-updates main contrib non-free" >> /etc/apt/sources.list
+echo "deb http://archive.debian.org/debian-security stretch/updates main contrib non-free" >> /etc/apt/sources.list
+EOF
+
 RUN apt update && apt install -y \
   build-essential \
   chrpath \

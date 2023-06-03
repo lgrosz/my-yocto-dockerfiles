@@ -1,45 +1,52 @@
-FROM ubuntu:22.04 as base
-
-ARG DEBIAN_FRONTEND=noninteractive
+FROM fedora:30 as base
 
 # [Required packages for build host](https://docs.yoctoproject.org/ref-manual/system-requirements.html#ubuntu-and-debian)
-RUN apt update && apt install -y \
-  build-essential \
+RUN dnf -y update && dnf -y install \
+  SDL-devel \
+  bzip2 \
+  ccache \
   chrpath \
   cpio \
-  debianutils \
+  cpp \
   diffstat \
+  diffutils \
   file \
+  findutils \
   gawk \
   gcc \
+  gcc-c++ \
   git \
-  iputils-ping \
-  libegl1-mesa \
-  liblz4-tool \
-  libsdl1.2-dev \
-  mesa-common-dev \
-  pylint \
+  glibc-devel \
+  gzip \
+  hostname \
+  make \
+  patch \
+  perl \
+  perl-Data-Dumper \
+  perl-Text-ParseWords \
+  perl-Thread-Queue \
+  perl-bignum \
+  python \
   python3 \
-  python3-git \
+  python3-GitPython \
   python3-jinja2 \
   python3-pexpect \
   python3-pip \
-  python3-subunit \
+  rpcgen \
   socat \
+  tar \
   texinfo \
   unzip \
   wget \
+  which \
   xterm \
-  xz-utils \
-  zstd \
-  && apt clean && rm -rf /var/lib/apt/lists/*
+  xz \
+  && dnf clean all
 
 # Locale setup
-RUN apt update && apt install -y \
-  locales \
-  && apt clean && rm -rf /var/lib/apt/lists/*
-RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen \
-  && locale-gen
+RUN dnf -y update && dnf -y install \
+  glibc-langpack-en \
+  && dnf clean all
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
@@ -56,17 +63,13 @@ WORKDIR /home/chef
 RUN \
   git clone git://git.yoctoproject.org/poky \
   && cd poky \
-  && git checkout master \
+  && git checkout zeus \
   && . ./oe-init-build-env \
   && echo INHERIT += \"rm_work\" >> conf/local.conf \
   && bitbake quilt-native
 
 
 FROM base as development
-
-RUN apt update && apt install -y \
-  curl \
-  && apt clean && rm -rf /var/lib/apt/lists/*
 
 # Setup [fixuid](https://github.com/boxboat/fixuid)
 RUN USER=chef && \

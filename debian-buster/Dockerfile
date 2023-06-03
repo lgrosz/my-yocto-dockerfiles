@@ -1,8 +1,8 @@
-FROM ubuntu:18.04 as base
+FROM debian:buster as base
 
 ARG DEBIAN_FRONTEND=noninteractive
 
-# [Required packages for build host](https://docs.yoctoproject.org/ref-manual/system-requirements.html#ubuntu-and-debian)
+# [Required packages for build host](https://docs.yoctoproject.org/3.0/mega-manual/mega-manual.html#ubuntu-packages)
 RUN apt update && apt install -y \
   build-essential \
   chrpath \
@@ -46,21 +46,35 @@ ENV LC_ALL en_US.UTF-8
 RUN useradd --create-home chef
 
 
-from base as builder
-
+FROM base as test
 USER chef
 WORKDIR /home/chef
 
+# [Quick build](https://docs.yoctoproject.org/brief-yoctoprojectqs/index.html#use-git-to-clone-poky)
 RUN \
   git clone git://git.yoctoproject.org/poky \
   && cd poky \
   && git checkout zeus \
   && . ./oe-init-build-env \
   && echo INHERIT += \"rm_work\" >> conf/local.conf \
-  && bitbake buildtools-tarball
+  && bitbake quilt-native
 
 
-from ubuntu:18.04 as buildtools
+FROM base as development
 
-COPY --from=builder /home/chef/poky/build/tmp/deploy/sdk/x86_64-buildtools-nativesdk-standalone-3.0.4.sh /
+RUN apt update && apt install -y \
+  curl \
+  && apt clean && rm -rf /var/lib/apt/lists/*
 
+# Setup [fixuid](https://github.com/boxboat/fixuid)
+RUN USER=chef && \
+    GROUP=chef && \
+    curl -SsL https://github.com/boxboat/fixuid/releases/download/v0.5.1/fixuid-0.5.1-linux-amd64.tar.gz | tar -C /usr/local/bin -xzf - && \
+    chown root:root /usr/local/bin/fixuid && \
+    chmod 4755 /usr/local/bin/fixuid && \
+    mkdir -p /etc/fixuid && \
+    printf "user: $USER\ngroup: $GROUP\n" > /etc/fixuid/config.yml
+
+USER chef:chef
+WORKDIR /home/chef
+ENTRYPOINT ["fixuid"]

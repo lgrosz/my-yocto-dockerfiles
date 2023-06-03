@@ -1,59 +1,43 @@
-FROM fedora:36 as base
+FROM ubuntu:16.04 as base
 
-# [Required packages for build host](https://docs.yoctoproject.org/ref-manual/system-requirements.html#ubuntu-and-debian)
-RUN dnf -y update && dnf -y install \
-  SDL-devel \
-  bzip2 \
-  ccache \
+ARG DEBIAN_FRONTEND=noninteractive
+
+# [Required packages for build host](https://docs.yoctoproject.org/3.0/mega-manual/mega-manual.html#ubuntu-packages)
+RUN apt update && apt install -y \
+  build-essential \
   chrpath \
   cpio \
-  cpp \
+  debianutils \
   diffstat \
-  diffutils \
-  file \
-  findutils \
   gawk \
-  gcc \
-  gcc-c++ \
-  git \
-  glibc-devel \
-  gzip \
-  hostname \
-  lz4 \
-  make \
-  mesa-libGL-devel \
-  patch \
-  perl \
-  perl-Data-Dumper \
-  perl-File-Compare \
-  perl-File-Copy \
-  perl-FindBin \
-  perl-Text-ParseWords \
-  perl-Thread-Queue \
-  perl-bignum \
-  perl-locale \
+  gcc-multilib \
+  git-core \
+  iputils-ping \
+  libegl1-mesa \
+  liblz4-tool \
+  libsdl1.2-dev \
+  mesa-common-dev \
+  pylint3 \
   python \
   python3 \
-  python3-GitPython \
+  python3-git \
   python3-jinja2 \
   python3-pexpect \
   python3-pip \
-  rpcgen \
   socat \
-  tar \
   texinfo \
   unzip \
   wget \
-  which \
   xterm \
-  xz \
-  zstd \
-  && dnf clean all
+  xz-utils \
+  && apt clean && rm -rf /var/lib/apt/lists/*
 
 # Locale setup
-RUN dnf -y update && dnf -y install \
-  glibc-langpack-en \
-  && dnf clean all
+RUN apt update && apt install -y \
+  locales \
+  && apt clean && rm -rf /var/lib/apt/lists/*
+RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen \
+  && locale-gen
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
@@ -70,13 +54,17 @@ WORKDIR /home/chef
 RUN \
   git clone git://git.yoctoproject.org/poky \
   && cd poky \
-  && git checkout master \
+  && git checkout zeus \
   && . ./oe-init-build-env \
   && echo INHERIT += \"rm_work\" >> conf/local.conf \
   && bitbake quilt-native
 
 
 FROM base as development
+
+RUN apt update && apt install -y \
+  curl \
+  && apt clean && rm -rf /var/lib/apt/lists/*
 
 # Setup [fixuid](https://github.com/boxboat/fixuid)
 RUN USER=chef && \

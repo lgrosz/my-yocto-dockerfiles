@@ -1,38 +1,33 @@
-FROM almalinux:8.7 as base
+FROM centos:7 as base
 
-# [Required packages for build host](https://docs.yoctoproject.org/ref-manual/system-requirements.html#ubuntu-and-debian)
-RUN dnf -y update \
-  && dnf -y install epel-release \
-  && dnf config-manager --set-enabled powertools \
-  && dnf makecache \
-  && dnf -y install \
+# [Required packages for build host](https://docs.yoctoproject.org/3.0/mega-manual/mega-manual.html#ubuntu-packages)
+RUN \
+  yum update -y \
+  && yum install -y epel-release \
+  && yum makecache \
+  && yum install -y \
     SDL-devel \
     bzip2 \
-    ccache \
     chrpath \
     cpp \
     diffstat \
     diffutils \
+    file \
     gawk \
     gcc \
     gcc-c++ \
     git \
     glibc-devel \
     gzip \
-    lz4 \
     make \
-    mesa-libGL-devel \
     patch \
     perl \
     perl-Data-Dumper \
     perl-Text-ParseWords \
     perl-Thread-Queue \
+    python \
     python3 \
-    python3-GitPython \
-    python3-jinja2 \
-    python3-pexpect \
     python3-pip \
-    rpcgen \
     socat \
     tar \
     texinfo \
@@ -41,20 +36,16 @@ RUN dnf -y update \
     which \
     xterm \
     xz \
-    zstd \
-  && dnf clean all
+  && yum clean all
 
-# Locale setup
-RUN dnf -y update && dnf -y install \
-  glibc-langpack-en \
-  && dnf clean all
-ENV LANG en_US.UTF-8
-ENV LANGUAGE en_US:en
+RUN pip3 install GitPython jinja2
+
+RUN localedef -c -f UTF-8 -i en_US en_US.UTF-8
 ENV LC_ALL en_US.UTF-8
 
 # Pull in build-tools
-COPY --from=yocto_buildtools /x86_64-buildtools-extended-nativesdk-standalone-4.2.sh /
-RUN /x86_64-buildtools-extended-nativesdk-standalone-4.2.sh -y
+COPY --from=yocto_buildtools /x86_64-buildtools-nativesdk-standalone-3.0.4.sh /
+RUN /x86_64-buildtools-nativesdk-standalone-3.0.4.sh -y
 
 # Can't run bitbake as root
 RUN useradd --create-home chef
@@ -66,10 +57,10 @@ WORKDIR /home/chef
 
 # [Quick build](https://docs.yoctoproject.org/brief-yoctoprojectqs/index.html#use-git-to-clone-poky)
 RUN \
-  . /opt/poky/4.2/environment-setup-x86_64-pokysdk-linux \
+  . /opt/poky/3.0.4/environment-setup-x86_64-pokysdk-linux \
   && git clone git://git.yoctoproject.org/poky \
   && cd poky \
-  && git checkout master \
+  && git checkout zeus \
   && . ./oe-init-build-env \
   && echo INHERIT += \"rm_work\" >> conf/local.conf \
   && bitbake quilt-native

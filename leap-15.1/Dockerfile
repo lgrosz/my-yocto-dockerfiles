@@ -1,8 +1,7 @@
-FROM opensuse/leap:15.4 as base
+FROM opensuse/leap:15.1 as base
 
 # [Required packages for build host](https://docs.yoctoproject.org/ref-manual/system-requirements.html#ubuntu-and-debian)
 RUN zypper --non-interactive update && zypper --non-interactive install \
-  Mesa-dri-devel \
   Mesa-libEGL1 \
   bzip2 \
   chrpath \
@@ -13,7 +12,6 @@ RUN zypper --non-interactive update && zypper --non-interactive install \
   gzip \
   hostname \
   libSDL-devel \
-  lz4 \
   make \
   makeinfo \
   patch \
@@ -25,21 +23,16 @@ RUN zypper --non-interactive update && zypper --non-interactive install \
   python3-curses \
   python3-pexpect \
   python3-pip \
-  rpcgen \
   socat \
   tar \
   wget \
   which \
   xterm \
   xz \
-  zstd \
-  && zypper clean
+  && \
+  zypper clean
 
 RUN pip3 install GitPython
-
-# Pull in build-tools
-COPY --from=yocto_buildtools /x86_64-buildtools-extended-nativesdk-standalone-4.2.sh /
-RUN /x86_64-buildtools-extended-nativesdk-standalone-4.2.sh -y
 
 # Can't run bitbake as root
 RUN useradd --user-group --create-home chef
@@ -51,16 +44,19 @@ WORKDIR /home/chef
 
 # [Quick build](https://docs.yoctoproject.org/brief-yoctoprojectqs/index.html#use-git-to-clone-poky)
 RUN \
-  . /opt/poky/4.2/environment-setup-x86_64-pokysdk-linux \
-  && git clone git://git.yoctoproject.org/poky \
+  git clone git://git.yoctoproject.org/poky \
   && cd poky \
-  && git checkout master \
+  && git checkout zeus \
   && . ./oe-init-build-env \
   && echo INHERIT += \"rm_work\" >> conf/local.conf \
   && bitbake quilt-native
 
 
 FROM base as development
+
+RUN zypper --non-interactive update && zypper --non-interactive install \
+  curl \
+  && zypper clean
 
 # Setup [fixuid](https://github.com/boxboat/fixuid)
 RUN USER=chef && \
