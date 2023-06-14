@@ -2,6 +2,11 @@
 
 Dockerfiles which provide containerized build hosts for the [Yocto Project](https://www.yoctoproject.org/).
 
+| Branch | Workflow Status |
+|------- | --------------- |
+| master | [![Build images](https://github.com/lgrosz/my-yocto-dockerfiles/actions/workflows/docker-build.yml/badge.svg?branch=master)](https://github.com/lgrosz/my-yocto-dockerfiles/actions/workflows/docker-build.yml)    |
+| zeus   | [![Build images](https://github.com/lgrosz/my-yocto-dockerfiles/actions/workflows/docker-build.yml/badge.svg?branch=zeus)](https://github.com/lgrosz/my-yocto-dockerfiles/actions/workflows/docker-build.yml)    |
+
 # How is this different than crops?
 
 [crops](https://github.com/crops) are the official Yocto Project containerized
